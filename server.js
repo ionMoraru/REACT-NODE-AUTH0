@@ -20,6 +20,18 @@ const jwtCheck = jwt({
   algorithms: ["RS256"]
 });
 
+function checkRole(role) {
+    return function(req, res, next) {
+        const assignedRoles = req.user['http://localhost:3000/roles'];
+        
+        if (Array.isArray(assignedRoles) && assignedRoles.includes(role)) {
+            return next();
+        } else {
+            return res.status(401).send('Insufficient role')
+        }
+    }
+}
+
 app.get("/public", (req, res) => {
   res.json({
     message: "Public API"
@@ -38,6 +50,12 @@ app.get("/courses", jwtCheck, checkScope(["read:courses"]), (req, res) => {
     ]
   });
 });
+
+app.get("/admin", jwtCheck, checkRole('admin'), (req, res) => {
+    res.json({
+      message: "Private API"
+    });
+  });
 
 app.listen(3001, () =>
   console.log(`Server run on ${process.env.REACT_APP_API_UR}`)

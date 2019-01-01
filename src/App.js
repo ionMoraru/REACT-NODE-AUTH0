@@ -8,6 +8,7 @@ import Private from "./Private";
 import Courses from "./Courses";
 import Auth from "./Auth/Auth";
 import Callback from "./Callback";
+import Admin from "./Admin";
 
 class App extends Component {
   constructor(props) {
@@ -60,6 +61,16 @@ class App extends Component {
             render={props =>
               this.auth.isAuthenticated() && this.auth.userHasScopes(["read:courses"]) ? (
                 <Courses auth={this.auth} {...props} />
+              ) : (
+                <Redirect to="/" />
+              )
+            }
+          />
+          <Route
+            path="/admin"
+            render={props =>
+              this.auth.isAuthenticated() ? (
+                <Admin auth={this.auth} {...props} />
               ) : (
                 <Redirect to="/" />
               )
