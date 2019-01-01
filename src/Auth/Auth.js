@@ -54,6 +54,8 @@ export default class Auth {
     _scopes = authResult.scope || this.requestedScopes || "";
     _accessToken = authResult.accessToken;
     _idToken = authResult.idToken;
+
+    this.scheduleTokenRenewal()
   };
 
   isAuthenticated = () => {
@@ -68,7 +70,7 @@ export default class Auth {
   };
 
   getAccessToken = () => {
-    if (_accessToken) {
+    if (!_accessToken) {
       throw new Error("No access token found");
     }
     return _accessToken;
@@ -87,5 +89,24 @@ export default class Auth {
     const grantedScopes = (_scopes || "").split(" ");
 
     return scopes.every(scope => grantedScopes.includes(scope));
+  }
+
+  renewToken(cb) {
+    this.auth0.checkSession({}, (err, result) => {
+      if (err) {
+        console.log(`Error: ${err.error} - ${err.error_description}`);
+      } else {
+        this.setSession(result);
+      }
+
+      if (cb) cb(err, result);
+    });
+  }
+
+  scheduleTokenRenewal() {
+    const delay = _expiresAt - Date.now();
+    if (delay > 0) setTimeout(() => {
+      this.renewToken()
+    }, delay);
   }
 }
